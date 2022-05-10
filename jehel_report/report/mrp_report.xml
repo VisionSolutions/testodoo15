@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="paperformat_report_mrp_jehel" model="report.paperformat">
+        <field name="name">Production Order</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">41</field>
+        <field name="margin_bottom">45</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="mrp.action_report_production_order" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_report_mrp_jehel"/>
+    </record>
+
+        <template id="external_layout_standard_cust">
+            <div class="header">
+                <table class="" style="font-family: Arial, Helvetica, sans-serif;/*! border: 2px solid #444; */width: 100%;" cellspacing="0" cellpadding="0" align="center">
+                     <tbody>
+                        <tr>
+                           <td rowspan="3" style="width:20%;text-align: center;border:2px solid #444;border-right: 2px solid #444; padding: 5px;">
+                              <p style="margin: 0;">
+                                  <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="width:64%;" alt="Logo"/>
+                              </p>
+                           </td>
+                           <td class="" style="padding:10px 0;width: 80%;text-align: center;border: 2px solid #444;border-right-color: rgb(68, 68, 68);border-right-style: solid;border-right-width: 2px;border-left: transparent;">
+                              <p style="text-align: center; font-weight: 600;   color: #000; margin: 0;line-height: 30px; font-size: 17px; "><span t-field="o.company_id.name"/></p>
+                              <p style="text-align: center; font-weight: 500;   color: #000; margin: 0;line-height: 24px;">
+                                 <span t-field="o.company_id.street"/> <span t-field="o.company_id.city"/>
+                              </p>
+                              <p style="text-align: center; font-weight: 500;   color: #000; margin: 0;line-height: 24px;">
+                                 <span t-field="o.company_id.state_id"/> <span t-field="o.company_id.zip"/>
+                              </p>
+                           </td>
+                        </tr>
+                     </tbody>
+                </table>
+
+            </div>
+
+            <div class="footer text-right">
+                <div>
+                  <p style="width:100%;text-align:right;"><strong style="font-size: 14px">for <span t-field="o.company_id.name"/>.</strong></p>
+                </div><br/>
+                <div>
+                  <p style="width:100%;padding-left:0px;padding-right:13%;"><strong style="font-size: 14px">Authorised Signatory</strong> </p>
+                </div>
+            </div>
+
+
+            <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+                <t t-out="0"/>
+            </div>
+
+    </template>
+
+    <template id="internal_layout_custom_jehel">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+            <t t-if="not company">
+                <!-- Multicompany -->
+                <t t-if="company_id">
+                    <t t-set="company" t-value="company_id"/>
+                </t>
+                <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                </t>
+                <t t-else="else">
+                    <t t-set="company" t-value="res_company"/>
+                </t>
+            </t>
+
+            <t t-call="jehel_report.external_layout_standard_cust"><t t-out="0"/></t>
+
+    </template>
+
+    <template id="report_mrp_call" inherit_id="mrp.report_mrporder">
+        <xpath expr="//t[@t-call='web.html_container']" position="replace" >
+            <t t-call="web.html_container">
+                 <t t-foreach="docs" t-as="o">
+                     <t t-call="jehel_report.jehellive_mrp_report" t-lang="lang"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="jehellive_mrp_report">
+        <t t-call="jehel_report.internal_layout_custom_jehel">
+                <div class="page">
+                    <table class="" style="font-family: Arial, Helvetica, sans-serif;/*! border-left: 2px solid #444; *//*! border-right: 2px solid #444; */width: 100%;text-align: center;/*! padding: 5px; */border-spacing: 0;" align="center">
+                     <tbody>
+                        <tr>
+                           <td style="border-left: 2px solid #444;border-right: 2px solid #444;border-top: 2px solid #444;line-height: 33px;padding: 0;">
+                              <strong style="font-size: 15px">Manufacturing Order</strong>
+                           </td>
+                        </tr>
+                     </tbody>
+                </table>
+                <table style="width:100%;/*! border: 2px solid black; */border-spacing: 0;" align="top">
+                     <tbody>
+                        <tr style="width:100%;" align="top">
+                           <td style="width:50%;border: 2px solid black;border-right: transparent;" align="top">
+                               <p  style="margin-bottom: 0px;margin-top: 15px;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">MO No.:</strong>
+                               <span style="font-size: 14px" t-field="o.origin"/></p>
+                               <p  style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Date:</strong>
+                               <span style="font-size: 14px" t-field="o.date_planned_start"/></p>
+                               <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Client Name : </strong>
+                                <span style="font-size: 14px" t-if="o.sale_order_id" t-field="o.sale_order_id.partner_id.name"/>
+                               </p>
+                               <p  style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Address :</strong>
+                               <span style="font-size: 14px" t-field="o.sale_order_id.partner_id.street"/><t t-if="o.sale_order_id.partner_id.city">, </t><span style="font-size: 14px" t-field="o.sale_order_id.partner_id.city"/>
+                               </p>
+                               <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Delivery Address :</strong>
+                                   <span style="font-size: 14px" t-field="o.sale_order_id.partner_shipping_id.street"/><t t-if="o.sale_order_id.partner_shipping_id.city">, </t><span style="font-size: 12px" t-field="o.sale_order_id.partner_shipping_id.city"/>
+                               </p>
+                               <p style="margin-bottom: 0px;margin-top: 0;margin-bottom: 15px;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Client PO No. :</strong>
+                               <span style="font-size: 14px"  t-field="o.sale_order_id"/>
+                               </p>
+                           </td>
+                           <td style="width:50%;border-left: 2px solid black;padding-left: 3px;border: 2px solid black;" align="top">
+                               <p style="margin-bottom: 0px;margin-top: 15px;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">GA Drg. No. : </strong>
+                              <span style="font-size: 14px" t-field="o.ga_drg_no"/></p>
+                               <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">GA Approval Date :</strong>
+                              <span style="font-size: 14px" t-field="o.ga_approval_date"/></p>
+                               <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Panel Drawing No. : </strong> <span style="font-size: 14px" t-field="o.panel_drawing_no"/></p>
+                               <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Electrical Approval Date : </strong>
+                              <span style="font-size: 14px" t-field="o.electrical_circuit_approval_date"/></p>
+                            <!-- <p style="margin-bottom: 0px;margin-top: 0;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">BOM release Date :</strong></p> -->
+                            <p style="margin-bottom: 0px;margin-top: 0;margin-bottom: 15px;padding-left:5px;" class="oe_inline"><strong style=" font-weight: 600;   color: #000; margin: 0;font-size: 14px;line-height: 27px;">Delivery INCOTERM : </strong> <span style="font-size: 14px" t-field="o.transport"/></p>
+                           </td>
+                        </tr>
+                     </tbody>
+                </table>
+                    <table class="table table-borderless m-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center"><span style="font-size: 14px">Sl. No.</span></th>
+                            <th class="text-center"><span style="font-size: 14px">Description of Goods</span></th>
+                            <th class="text-center"><span style="font-size: 14px">HSN Code</span></th>
+                            <th class="text-center"><span style="font-size: 14px">Qty</span></th>
+                            <th class="text-center"><span style="font-size: 14px">Unit</span></th>
+                        </tr>
+                    </thead>
+                    <t t-set="sl" t-value="0"/>
+                    <tbody>
+                        <tr class="text-center">
+                            <td>
+                                <t t-set="sl" t-value="sl + 1" />
+                                <span style="font-size: 14px" t-esc="sl"/>
+                            </td>
+                            <td><span style="font-size: 14px" t-field="o.product_id.name"/></td>
+                            <td><span style="font-size: 14px" t-field="o.product_id.l10n_in_hsn_code"/></td>
+                            <td><span style="font-size: 14px" t-field="o.product_qty"/></td>
+                            <td><span style="font-size: 14px" t-field="o.product_uom_id.name"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </t>
+    </template>
+
+
+    </data>
+</odoo>
+
+
+

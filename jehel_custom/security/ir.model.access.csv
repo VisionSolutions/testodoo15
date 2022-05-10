@@ -1,0 +1,2 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+jehel_base_module.access_jehel_base_module,access_jehel_base_module,jehel_base_module.model_jehel_base_module,,1,1,1,1

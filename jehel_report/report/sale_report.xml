@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="sale.action_report_saleorder" model="ir.actions.report">
+        <field name="name">Quotation / Order old</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sale.report_saleorder</field>
+        <field name="report_file">sale.report_saleorder</field>
+        <!-- <field name="print_report_name">(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)</field> -->
+        <!-- <field name="binding_model_id" ref="model_sale_order"/> -->
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="paperformat_report_so_jehel" model="report.paperformat">
+        <field name="name">Jehel Paper Format sale order</field>
+        <field name="default" eval="True"/>
+        <field name="format">Letter</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">40</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_saleorder_jehel" model="ir.actions.report">
+        <field name="name">Quotation / Order</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">jehel_report.report_saleorder_jehel</field>
+        <field name="report_file">jehel_report.report_saleorder_jehel</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_report_so_jehel"/>
+    </record>
+
+    <template id="external_layout_standard_jehel_so">
+        <!-- <div t-attf-class="header o_company_#{company.id}_layout first-page" t-att-style="report_header_style">
+            <div class="row">
+                <div align="left" class="col-3 mb4" style="margin: 0px; padding: 0px;">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+                <div class="col-7 text-left" style="font-size: 20px; font-weight: bold;margin: 0px; padding: 0px;" t-field="company.name" name="moto"/>
+                <div align="right" class="col-2 mb4" style="margin: 0px; padding: 0px;">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 mb4" style="margin: 0px; padding: 0px;">
+                    <strong style="margin-left: 10px;">Regd.Office - <br/></strong>
+                    <div style="margin-left: 40px;">
+                        <span t-if="company.reg_office" t-field="company.reg_office"/>
+                    </div>
+                </div>
+                <div class="col-6 mb4" style="margin: 0px; padding: 0px;">
+                    <strong style="margin-left: 10px;">Works - <br/></strong>
+                    <div style="margin-left: 40px;">
+                        <span t-if="company.street" t-field="company.street"/>, <span t-if="company.street2" t-field="company.street2"/>, <span t-if="company.city" t-field="company.city"/>, <span t-if="company.state_id" t-field="company.state_id.name"/> <br/>
+                        Pin No. <span t-if="company.zip" t-field="company.zip"/>  Phone : <span t-if="company.phone" t-field="company.phone"/> <br/>
+                        Email : <span t-if="company.website" t-field="company.website"/>
+                    </div>
+                </div>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+        </div> -->
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-3">
+                <!-- style="padding-top: 1rem !important;" -->
+                <!-- This div ensures that the address is not cropped by the header. -->
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="text-left col-12">
+                <div>
+                    Thanking You ,<br/><br/>
+                    for <strong><span t-field="company.name"/></strong><br/>
+                    <strong>Mr. : <span t-field="user_id.name"/></strong><br/>
+                    <strong>M : <span t-field="user_id.phone"/></strong><br/>
+                    <strong>E : <span t-field="user_id.email"/></strong><br/>
+                </div>
+            </div>
+            <div class="text-center col-12 mt32 mb32">
+                <div>
+                    "This Is Computer Generated Document Bears No Signature..."<br/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="external_layout_jehel_so">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <!-- <t t-if="company.external_report_layout_id" t-call="{{company.external_report_layout_id.key}}"><t t-out="0"/></t> -->
+        <t t-call="jehel_report.external_layout_standard_jehel_so"><t t-out="0"/></t>
+
+    </template>
+
+    <template id="report_saleorder_document_jehel">
+        <t t-call="jehel_report.external_layout_jehel_so">
+            <div>
+                    <!-- <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">  -->
+                <style type="text/css">
+                    .invoice-box {
+                        max-width: 100%;
+                        <!-- margin: auto; -->
+                        font-size: 12px;
+                        <!-- line-height: 24px; -->
+                        font-family: 'Times New Roman', Times, serif !important;
+                        color: #000;
+                    }
+
+                    .test {
+                        background-color: blue;
+                        color: white;
+                    }
+
+                    table {
+                        border-top: 1px solid #444;
+                        border-left: 1px solid #444;
+                        border-spacing:0;
+                        width: 100%;
+                        font-family: 'Times New Roman', Times, serif !important;
+                    }
+
+                    table td {
+                        border-right: 1px solid #444;
+                        border-bottom: 1px solid #444;
+                        margin-left: 2px;
+                        padding:0;
+                        font-family: 'Times New Roman', Times, serif !important;
+                        
+                    }
+
+                    .td-txt {
+                        font-family: 'Times New Roman', Times, serif;
+                        line-height:24px;
+                        padding:10px 0;
+                        text-align: left;
+                        font-size: 14px;
+                        }
+                        
+                    table tr {
+                        height: 22px;
+                    }
+
+                    table th {
+                        border-right: 1px solid #444;
+                        border-bottom: 1px solid #444;
+                        margin: 0;
+                        padding: 5px 8px;
+                        font-family: 'Times New Roman', Times, serif !important;
+                    }
+
+                    .datta-tbl td {
+                       padding: 5px 8px;
+                    }
+
+                    .jpp-dtd td {
+                    border-bottom: 0;
+                        }
+                        
+                        .jpp-dtd {
+                        border-bottom: 1px solid #444;
+                    }
+                    <!-- .row {
+                        display: -ms-flexbox;
+                        display: flex;
+                        -ms-flex-wrap: wrap;
+                        flex-wrap: wrap;
+                    }
+                    .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {
+                        position: relative;
+                        width: 100%;
+                    }
+                    .col-1 {
+                     -ms-flex:0 0 8.333333%;
+                     flex:0 0 8.333333%;
+                     max-width:8.333333%
+                    }
+                    .col-2 {
+                     -ms-flex:0 0 16.666667%;
+                     flex:0 0 16.666667%;
+                     max-width:16.666667%
+                    }
+                    .col-3 {
+                     -ms-flex:0 0 25%;
+                     flex:0 0 25%;
+                     max-width:25%
+                    }
+                    .col-4 {
+                     -ms-flex:0 0 33.333333%;
+                     flex:0 0 33.333333%;
+                     max-width:33.333333%
+                    }
+                    .col-5 {
+                     -ms-flex:0 0 41.666667%;
+                     flex:0 0 41.666667%;
+                     max-width:41.666667%
+                    }
+                    .col-6 {
+                     -ms-flex:0 0 50%;
+                     flex:0 0 50%;
+                     max-width:50%
+                    }
+                    .col-7 {
+                     -ms-flex:0 0 58.333333%;
+                     flex:0 0 58.333333%;
+                     max-width:58.333333%
+                    }
+                    .col-8 {
+                     -ms-flex:0 0 66.666667%;
+                     flex:0 0 66.666667%;
+                     max-width:66.666667%
+                    }
+                    .col-9 {
+                     -ms-flex:0 0 75%;
+                     flex:0 0 75%;
+                     max-width:75%
+                    }
+                    .col-10 {
+                     -ms-flex:0 0 83.333333%;
+                     flex:0 0 83.333333%;
+                     max-width:83.333333%
+                    }
+                    .col-11 {
+                     -ms-flex:0 0 91.666667%;
+                     flex:0 0 91.666667%;
+                     max-width:91.666667%
+                    }
+                    .col-12 {
+                     -ms-flex:0 0 100%;
+                     flex:0 0 100%;
+                     max-width:100%
+                    } -->
+                </style>
+            </div>
+            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+            <t t-set="forced_vat" t-value="doc.fiscal_position_id.foreign_vat"/>
+            <div class="row" style="margin-top: 0px; padding-top: 0px;">
+                <div align="left" class="col-2 mb4" style="margin: 0px; padding-top: 0px; padding-left: 10px; padding-bottom: 5px;">
+                    <img t-if="user.company_id.logo" t-att-src="image_data_uri(user.company_id.logo)" style="max-height: 55px; max-width: 55px;" alt="Logo"/>
+                </div>
+                <!-- <div class="col-8 text-left" style="font-size: 18px; font-weight: bold;margin: 0px; padding: 0px; font-family: 'Times New Roman', Times, serif; text-transform:uppercase;" name="moto">
+                    <center><i><span t-field="user.company_id.name"/></i></center>
+                </div> -->
+                <!-- display: flex;align-items: center;justify-content: center; -->
+                <div class="col-8 text-left" style="font-size: 17px; font-weight: bold;margin: 0px; padding-top: 20px; font-family: 'Times New Roman', Times, serif; text-transform:uppercase; align-content: center;position: relative;align-items: center;" name="moto">
+                    <center><span><i><span t-field="user.company_id.name"/></i></span></center>
+                </div>
+                <div align="right" class="col-2 mb4" style="margin: 0px; padding-right: 22px; padding-bottom: 5px;">
+                    <img src="/jehel_report/static/src/img/new.png" style="width:55px; height:55px;"/>
+                </div>
+            </div>
+
+            <div style="border-bottom: 1px solid #444; margin_top: 0px; font-family: 'Open Sans', sans-serif !important; line-height:18px; font-weight: bold;">
+                <div class="row" style="font-family: 'Open Sans', sans-serif !important; font-size: 13px;">
+                    <div class="col-5 mb4" style="margin: 0px; padding: 0px;">
+                        <strong style="margin-left: 10px; ">Regd.Office - <br/></strong>
+                        <div style="margin-left: 40px; font-family: 'Open Sans', sans-serif !important;">
+                            <span t-if="user.company_id.reg_office" t-field="user.company_id.reg_office"/><br/>
+                            <span style="">Phone : 2230-5810 / 8768/4093, Fax : 2230-7199</span>
+                        </div>
+                    </div>
+                    <div class="col-7 mb4" style="margin: 0px; padding: 0px;">
+                        <strong style="margin-left: 10px;">Works - <br/></strong>
+                        <div style="margin-left: 40px;">
+                            <span t-if="user.company_id.street" t-field="user.company_id.street"/><t t-if="user.company_id.street2">, <span t-if="user.company_id.street2" t-field="user.company_id.street2"/></t><t t-if="user.company_id.city">, <span t-if="user.company_id.city" t-field="user.company_id.city"/></t><t t-if="user.company_id.state_id">, <span t-if="user.company_id.state_id" t-field="user.company_id.state_id.name"/> </t><br/>
+                            Pin No. <span t-if="user.company_id.zip" t-field="user.company_id.zip"/>  Phone : <span t-if="user.company_id.phone" t-field="user.company_id.phone"/> <br/>
+                            Email : <span t-if="user.company_id.email" t-field="user.company_id.email"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page">
+                    <!-- font-family: "Times New Roman", Times, serif; -->
+                <div class="oe_structure"/>
+                <div class="row mt64">
+                    <div class="col-6">
+                        Reference No :- <strong><span t-field="doc.client_order_ref"/></strong>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        Quotation No :- <strong><span t-field="doc.name"/></strong>
+                    </div>
+                    <div class="col-6">
+                        <strong>Date : <span t-field="doc.date_order" t-options='{"format": "dd.MM.yyyy"}'/> </strong>  
+                    </div>
+                </div>
+                <br/>
+                <div class="mt32">
+                    <h5>
+                        <strong>
+                            <span t-field="doc.partner_id.name"/><br/>
+                            <span t-field="doc.partner_id.city"/><t t-if="doc.partner_id.zip">-<span t-field="doc.partner_id.zip"/></t><t t-if="doc.partner_id.state_id">, <span t-field="doc.partner_id.state_id.name"/></t><t t-if="doc.partner_id.country_id">, <span t-field="doc.partner_id.country_id.name"/></t>
+                        </strong>
+                    </h5>
+                </div>
+                <t t-if="doc.partner_id.child_ids">
+                    <t t-foreach="doc.partner_id.child_ids" t-as="child">
+                        <t t-if="child.type == 'contact'">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <strong><u>Kind Attn: <span t-field="child.title"/>. <span t-field="child.name"/> | <span t-field="child.function"/> | Mobile: <span t-field="child.mobile"/> | Email: <span t-field="child.email"/></u></strong>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+                <br/>
+                <table class="datta-tbl jpp-dtd" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;margin_top :20px;border: 0px !important;">
+                    <tr class="heading">
+                        <th style="width: 5%; text-align: center; font-weight: bold; color: #000; font-size: 14px;border: 0px !important;">
+                            Sl No
+                        </th>
+                        <th style="width: 65%; text-align: center; font-weight: bold; color: #000; font-size: 14px; text-transform:uppercase;border: 0px !important;">
+                            Item Description
+                        </th>
+                        <th style="width: 7%; text-align: center;  font-weight: bold; color: #000; font-size: 14px;border: 0px !important;">
+                           Quantity
+                        </th>
+                         <th style="width: 12%; text-align: center;  font-weight: bold; color: #000; font-size: 14px;border: 0px !important;">
+                          Unit Rate (in <span t-esc="doc.currency_id.name"/>)
+                        </th>
+                    </tr>
+                    <t t-set="sl" t-value="0"/>
+                    <t t-foreach="doc.order_line" t-as="line">
+                        <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''" style="border: 0px !important;">
+                        <!-- <tr style="border-bottom: 1px solid #444;"> -->
+                            <t t-if="not line.display_type">
+                                <td style="width: 5%; text-align: center; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;border: 0px !important;">
+                                    <t t-set="sl" t-value="sl + 1" />
+                                    <span t-esc="sl"/>
+                                </td>
+                                <td style="width: 65%; text-align: center; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;border: 0px !important;">
+                                    <strong>JEHEL</strong> make <p style="text-align: left; font-weight: normal; color: #000; margin: 0;line-height: 24px;"><strong><span t-field="line.name"/></strong></p>
+                                </td>
+                                <td style="width: 7%; text-align: center;  font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;border: 0px !important;">
+                                    <span t-esc="'%.0f'% line.product_uom_qty "/>
+                                    (<span t-esc="line.amount_to_text_qty(line.product_uom_qty)"/>)
+                                </td>
+                                <td style="width: 12%; text-align: center;  font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;border: 0px !important;">
+                                    <strong><span t-esc="doc.currency_id.symbol"/> <span t-field="line.price_unit"/> /- <span t-esc="line.product_uom.name"/></strong>
+                                </td>
+                            </t>
+                            <t t-if="line.display_type == 'line_section'">
+                                <td style="width: 5%; border: 0px !important;"></td>
+                                <td name="td_section_line" style="width: 65%; border: 0px !important;">
+                                    <span t-field="line.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                                <td style="width: 7%; border: 0px !important;"></td>
+                                <td style="width: 12%; border: 0px !important;"></td>
+                                <!-- <t t-set="current_section" t-value="line"/> -->
+                                <!-- <t t-set="current_subtotal" t-value="0"/> -->
+                            </t>
+                            <t t-if="line.display_type == 'line_note'">
+                                <td style="width: 5%; border: 0px !important;"></td>
+                                <td name="td_note_line" style="width: 65%; border: 0px !important;">
+                                    <span t-field="line.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                                <td style="width: 7%; border: 0px !important;"></td>
+                                <td style="width: 12%; border: 0px !important;"></td>
+                            </t>
+                        </tr>
+                    </t>
+                </table>
+                <br/>
+                <p style="page-break-before:always;"> </p>
+                <!-- <br/> -->
+                <div class="row">
+                </div>
+                <!-- <br/> -->
+                <div class="row mt64" style="margin-top: 50px;">
+                    <div class="col-12 text-center" style="margin-bottom: 10px; margin-top: 20px;">
+                        <!-- <strong><u>TERMS &amp; CONDITIONS FOR SALE:</u></strong> -->
+                        <strong style="width: 100%;display: block;text-align: center;margin-bottom: 20px;">
+                            <!-- <u>TERMS &amp; CONDITIONS FOR SALE</u> -->
+                            <u style="padding-bottom: 10px;">TERMS &amp; CONDITIONS FOR SALE:</u>
+                        </strong>
+                    </div>
+                </div>
+                <table align="center" class="datta-tbl mt64" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;margin_top :20px;">
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            PRICE
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.s_price"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            PACKING &amp; FORWARDING
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.p_f"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            TAXES &amp; DUTIES
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.t_d"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            DELIVERY
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.deliver"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            TERMS OF PAYMENT
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.t_p"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            TRANSPORTATION &amp; INSURANCE
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.t_i"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            SUPERVISION OF ERECTION &amp; COMMISSIONING
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.s_e_c"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            WARRANTY
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.s_warranty"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            FORCE MAJEURE CLAUSE
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.f_m_c"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            OFFER VALIDITY
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.o_v"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 30%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            KEY POINTS REGARDING ORDER VALIDITY
+                        </td>
+                        <td style="width: 70%; text-align: left; font-weight: normal; color: #000; font-size: 14px;    word-break: break-all;">
+                            <span t-field="doc.k_p_r_o_v"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_saleorder_jehel">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="jehel_report.report_saleorder_document_jehel" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_order_quotation" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="warranty"/>
+                <!-- <field name="expected_delivery_date"/>
+                <field name="delivery_date"/> -->
+                <field name="transport"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="transporter_name"/>
+                <field name="lr_no"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

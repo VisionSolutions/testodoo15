@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="account.account_invoices" model="ir.actions.report">
+            <field name="name">Invoices</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">account.report_invoice_with_payments</field>
+            <field name="report_file">account.report_invoice_with_payments</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+            <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field>
+            <!-- <field name="binding_model_id" ref="account.model_account_move"/> -->
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+            <field name="groups_id" eval="[(4, ref('account.group_account_invoice')),
+ (4, ref('account.group_account_readonly'))]"/>
+        </record>
+
+    <record id="paperformat_report_invoice_jehel" model="report.paperformat">
+        <field name="name">Jehel Paper Format Invoice</field>
+        <field name="default" eval="True"/>
+        <field name="format">Letter</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">7</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">2</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_invoice_jehel" model="ir.actions.report">
+        <field name="name">Invoices</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">jehel_report.report_invoice_jehel</field>
+        <field name="report_file">jehel_report.report_invoice_jehel</field>
+        <field name="print_report_name">(object._get_report_base_filename())</field>
+         <!-- <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field> -->
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="groups_id" eval="[(4, ref('account.group_account_invoice')),(4, ref('account.group_account_readonly'))]"/>
+        <field name="paperformat_id" ref="paperformat_report_invoice_jehel"/>
+    </record>
+
+    <template id="tax_groups_totals_jehel">
+        <t t-foreach="tax_totals['groups_by_subtotal'][subtotal_to_show]" t-as="amount_by_group">
+            <tr>
+                <td><span class="text-nowrap" t-esc="amount_by_group['tax_group_name']"/></td>
+                <td class="text-right o_price_total">
+                    <!-- <span t-esc="doc.currency_id.symbol"/> -->  <span class="text-nowrap" t-esc="'%.2f'% amount_by_group['tax_group_amount']" />
+                </td>
+            </tr>
+        </t>
+    </template>
+
+    <template id="external_layout_standard_jehel_invoice">
+        <div t-attf-class="header" t-att-style="report_header_style">
+            <!-- <div class="row"> -->
+                <!-- <table align="center" class="no-brd"  cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;">
+                    <tbody>
+                        <tr>
+                            <th class="no-brd" rowspan="2" style="width: 15%;">
+                                <p style="margin: 0;"> <img t-if="user.company_id.logo" t-att-src="image_data_uri(user.company_id.logo)" style="width:100%;" alt="Logo"/></p>
+                            </th>
+                            <td class="no-brd" colspan="6" style=" text-align: center; font-weight: bold;    font-size: 24px;  color: #000;line-height: 19px;padding-top: 10px;">
+                                <u>TAX INVOICE</u>
+                                <p style=" text-align: center; font-size: 12px; font-weight: normal; color: #000;line-height:5px;"><u>(Under Rule 46 of Central Rules &amp; Service Tax Rules 2017)</u></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="no-brd" colspan="6" style="padding:0px 0 10px">
+                                <p style="text-align: center; font-weight: bold;   color: #000; margin: 0;line-height: 30px; font-size: 20px; "><span t-if="user.company_id" t-field="user.company_id.name"/>
+                                </p>
+                                <p style="text-align: center; color: #000; margin: 0;line-height: 24px;">Works:- <span t-if="user.company_id.street" t-field="user.company_id.street"/>
+                                <t t-if="user.company_id.street2">, <span t-field="user.company_id.street2"/></t>
+                                <t t-if="user.company_id.city">, <span t-field="user.company_id.city"/></t>
+                                <t t-if="user.company_id.state_id">, <span t-field="user.company_id.state_id.name"/></t>
+                                <t t-if="user.company_id.zip">, <span t-field="user.company_id.zip"/></t>
+                                </p>
+                                <p style="text-align: center; color: #000; margin: 0;line-height: 24px;">Regd. Offeice - <span t-if="user.company_id.reg_office" t-field="user.company_id.reg_office"/>
+                                </p>
+                                <p style="text-align: center; color: #000; margin: 0;line-height: 24px;">Phone-<span t-if="user.company_id.phone" t-field="user.company_id.phone"/> Fax-2230-7199. Web Site:-<span t-if="user.company_id.website" t-field="user.company_id.website"/>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table> -->
+                <!-- <div align="left" class="col-3 mb4" style="margin: 0px; padding: 0px;">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+                <div class="col-7 text-left" style="font-size: 20px; font-weight: bold;margin: 0px; padding: 0px;" t-field="company.name" name="moto"/>
+                <div align="right" class="col-2 mb4" style="margin: 0px; padding: 0px;">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 mb4" style="margin: 0px; padding: 0px;">
+                    <strong style="margin-left: 10px;">Regd.Office - <br/></strong>
+                    <div style="margin-left: 40px;">
+                        <span t-if="company.reg_office" t-field="company.reg_office"/>
+                    </div>
+                </div>
+                <div class="col-6 mb4" style="margin: 0px; padding: 0px;">
+                    <strong style="margin-left: 10px;">Works - <br/></strong>
+                    <div style="margin-left: 40px;">
+                        <span t-if="company.street" t-field="company.street"/>, <span t-if="company.street2" t-field="company.street2"/>, <span t-if="company.city" t-field="company.city"/>, <span t-if="company.state_id" t-field="company.state_id.name"/> <br/>
+                        Pin No. <span t-if="company.zip" t-field="company.zip"/>  Phone : <span t-if="company.phone" t-field="company.phone"/> <br/>
+                        Email : <span t-if="company.website" t-field="company.website"/>
+                    </div>
+                </div>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div> -->
+            <!-- </div> -->
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-3">
+                <!-- style="padding-top: 1rem !important;" -->
+                <!-- This div ensures that the address is not cropped by the header. -->
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-out="0"/>
+        </div>
+
+        <!-- <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="text-left col-12">
+                <div>
+                    Thanking You ,<br/><br/>
+                    for <strong><span t-field="company.name"/></strong><br/>
+                    <strong>Mr. : <span t-field="user_id.name"/></strong><br/>
+                    <strong>M : <span t-field="user_id.phone"/></strong><br/>
+                    <strong>E : <span t-field="user_id.email"/></strong><br/>
+                </div>
+            </div>
+            <div class="text-center col-12 mt32 mb32">
+                <div>
+                    "This Is Computer Generated Document Bears No Signature..."<br/>
+                </div>
+            </div>
+        </div> -->
+    </template>
+
+    <template id="external_layout_jehel_invoice">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <!-- <t t-if="company.external_report_layout_id" t-call="{{company.external_report_layout_id.key}}"><t t-out="0"/></t> -->
+        <t t-call="jehel_report.external_layout_standard_jehel_invoice"><t t-out="0"/></t>
+
+    </template>
+
+    <template id="report_invoice_jehel_document">
+        <t t-call="jehel_report.external_layout_jehel_invoice">
+            <!-- <t t-foreach="docs" t-as="doc"> -->
+            <!-- <div> -->
+            <div>
+                <style type="text/css">
+                    .invoice-box {
+                        max-width: 100%;
+                        margin: auto;
+                        /*padding:10px;
+                            border: 1px solid #eee;
+                           box-shadow: 0 0 10px rgba(0, 0, 0, .15);*/
+                        font-size: 13px;
+                        line-height: 24px;
+                        <!-- font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; -->
+                        color: #000;
+                    }
+
+                    .test {
+                        background-color: blue;
+                        color: white;
+                    }
+                    table {
+                        border-top: 1px solid #444;
+                        border-left: 1px solid #444;
+                        /*"margin:0 auto;
+                        padding:0;*/
+                        border-spacing:0;
+                        /*text-align: center;
+                        width: 900px;*/
+                        width: 100%;
+                    }
+                    table td {
+                        border-right: 1px solid #444;
+                        border-bottom: 1px solid #444;
+                        margin:0;
+                        padding:0;
+                        
+                    }
+
+                    .td-txt {
+                        <!-- font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; -->
+                        line-height:24px;
+                        padding:0px;
+                        text-align: left;
+                         font-size: 14px;
+                        }
+                        
+                    .td-txt strong {
+                        padding-left: 13px;
+                        font-size: 14px;
+                    }
+
+                    .td-txt p.desc {
+                        padding: 0 13px;
+                    }
+
+                    .hgt {
+                            height: 30px;
+                                line-height: 40px;
+                        
+                        }
+                    hr.f-line {
+                        margin-left: 11px;
+                        width: 80%;
+                    }
+
+                    .p-lft {
+                        padding-left:13px;
+                        }
+                    .p-rit {
+                        padding-right:13px;
+                        }
+                        
+                        
+                    table tr {
+                        height: 22px;
+                    }
+                    .first-row {
+                        background-color: #fff;
+                    }
+                    .second-row {
+                        background-color: orange;
+                    }
+                    .third-row {
+                        background-color: yellow;
+                    }
+                    .forth-row {
+                        background-color: green;
+                    }
+                    .fifth-row {
+                        background-color: cornflowerblue;
+                    }
+                    .sixth-row {
+                        background-color: blue;
+                    }
+                    .seventh-row {
+                        background-color: purple;
+                    }
+                    .hend {
+                        text-align:center;
+                        <!-- font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; -->
+                        font-size:30px;
+                        text-transform:uppercase;
+                        color:#e7505a;
+                            float: left;
+                    }
+
+                    .no-brd {
+                        border:0;
+                        
+                        }
+                    .no-padd {
+                        padding: 0;
+                        }
+                        
+                    .txt-a-cntr {
+                        text-align:center;
+                        }
+
+                    .print-btn {
+                         background:#1b5ec4;
+                        background: #17becd;
+                        border: 0;
+                        padding: 10px 20px;
+                        color: #fff;
+                        text-transform: uppercase;
+                        font-size: 17px;
+                        float: right;
+                        margin: 20px 0;
+                            cursor: pointer;
+                    }
+
+                    .td-txt p {
+                        padding-left: 13px;
+                        
+                    }
+                    .l-m {
+                        padding-left: 13px;
+                        
+                    }
+
+                    table th {
+                        border-right: 1px solid #444;
+                        border-bottom: 1px solid #444;
+                        margin: 0;
+                        padding: 5px 8px;
+                    }
+
+                    .datta-tbl td {
+                       padding: 5px 8px;
+                    }
+
+                    .tbl-total td {
+                       padding: 5px 8px;
+                    }
+
+                    .jpp-dtd td {
+                    border-bottom: 0;
+                        }
+                        
+                        .jpp-dtd {
+                        border-bottom: 1px solid #444;
+                    }
+                </style>
+            </div>
+
+            <!-- <div class="page"> -->
+
+            <div class="invoice-box">
+            <table align="center" class="no-brd"  cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;">
+               <tr>
+                    <th class="no-brd" rowspan="2" style="width: 15%;"><p style="margin: 0;"> <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="width:100%;" alt="Logo"/></p></th>
+                    <td class="no-brd" colspan="6" style=" text-align: center; font-weight: bold;    font-size: 24px;  color: #000;line-height: 19px;padding-top: 10px;">
+                        <u>TAX INVOICE</u>
+                        <p style="padding-top:7px; text-align: center; font-size: 12px; font-weight: normal; color: #000;line-height:15px;"><u>(Under Rule 46 of Central Rules &amp; Service Tax Rules 2017)</u></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="no-brd" colspan="6" style="padding:0px;">
+                        <P style="text-align: center; font-weight: bold;   color: #000; margin: 0;line-height: 20px; font-size: 19px; "><span t-if="user.company_id" t-field="user.company_id.name"/>
+                        </P>
+                        <P style="text-align: center; color: #000; margin: 0;line-height: 19px;">Works:- <span t-if="user.company_id.street" t-field="user.company_id.street"/>
+                        <t t-if="user.company_id.street2">, <span t-field="user.company_id.street2"/></t>
+                        <t t-if="user.company_id.city">, <span t-field="user.company_id.city"/></t>
+                        <t t-if="user.company_id.state_id">, <span t-field="user.company_id.state_id.name"/></t>
+                        <t t-if="user.company_id.zip">, <span t-field="user.company_id.zip"/></t>
+                        </P>
+                        <P style="text-align: center; color: #000; margin: 0;line-height: 19px;">Regd. Offeice - <span t-if="user.company_id.reg_office" t-field="user.company_id.reg_office"/>
+                        </P>
+                        <P style="text-align: center; color: #000; margin: 0;line-height: 19px;">Phone-<span t-if="user.company_id.phone" t-field="user.company_id.phone"/> Fax-2230-7199. Web Site:-<span t-if="user.company_id.website" t-field="user.company_id.website"/>
+                        </P>
+                    </td>
+                </tr>
+            </table>
+
+            <table align="center" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 1px solid #444;">
+              <tr class="first-row">
+                <td  class="td-txt" width="25%"><strong>GSTIN : <span t-if="user.company_id.vat" t-field="user.company_id.vat"/> </strong> </td>
+                <td  class="td-txt" width="35%" ><strong>CIN NO - <span t-if="user.company_id.cin_no" t-field="user.company_id.cin_no"/></strong> </td>
+                <td  class="td-txt" width="20%" ><strong>IEC No - <span t-if="user.company_id.iec_no" t-field="user.company_id.iec_no"/></strong> </td>
+                <td  class="td-txt" width="20%" ><strong>PAN NO - <span t-if="user.company_id.partner_id.pan_no" t-field="user.company_id.partner_id.pan_no"/></strong> </td>
+              </tr>
+            </table>
+
+
+            <table align="center" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+
+              <tr class="first-row">
+                <td  class="td-txt" width="50%"><strong>Invoice No: </strong> <span t-field="doc.name"/></td>
+                <td  class="td-txt" width="50%" ><strong>Invoice Date : <span t-field="doc.invoice_date" t-options='{"format": "dd.MM.yyyy"}'/></strong> </td>
+                
+              </tr>
+                
+            </table>
+
+            <table align="center" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+
+              <tr class="first-row">
+                <td  class="td-txt" width="50%" style="padding-left: 0px; border-right: none; line-height:10px;">
+                    <p class="l-m" style="padding-top: 10px;"><strong class="l-m" style="padding-left: 0px;line-height:10px; display: block;">Recipient Name:-/Shipped To:  </strong></p>
+                    <br/>
+                    <p class="l-m" style="padding-left: 0px; line-height:10px;"></p>
+                    <p class="l-m" style="padding-left: 0px; text-align: left; font-weight: normal; color: #000; margin: 0; line-height:10px;">
+                        <p class="l-m"><strong class="l-m" style="padding-left: 0px;"><span t-if="doc.partner_shipping_id.name" t-field="doc.partner_shipping_id.name"/> </strong> </p>
+                        <p class="l-m">(A Unit of Jaykaycem Central Limited)</p>
+                        <p class="l-m">
+                            <span t-if="doc.partner_shipping_id.street" t-field="doc.partner_shipping_id.street"/>
+                        <t t-if="doc.partner_shipping_id.street2">
+                            , <span t-field="doc.partner_shipping_id.street2"/>
+                        </t>
+                        <t t-if="doc.partner_shipping_id.city">
+                            <t t-if="doc.partner_shipping_id.street2">, </t><span t-field="doc.partner_shipping_id.city"/>
+                        </t>
+                        <t t-if="doc.partner_shipping_id.state_id">
+                            <t t-if="doc.partner_shipping_id.city">, </t><span t-field="doc.partner_shipping_id.state_id.code"/>
+                        </t>
+                        </p>
+                    </p>
+                    <p class="l-m" style="padding-left: 0px;margin: 0; line-height:10px;">
+                        <p class="l-m"><strong class="l-m" style="padding-left: 0px;">State: </strong> <span t-if="doc.partner_shipping_id.state_id" t-field="doc.partner_shipping_id.state_id.name"/></p>
+                    </p>
+                    <p class="l-m" style="padding-left: 0px;margin: 0; line-height:10px;">
+                        <p class="l-m"><strong class="l-m" style="padding-left: 0px;">State Code : </strong> <span t-if="doc.partner_shipping_id.state_id" t-field="doc.partner_shipping_id.state_id.id"/></p>
+                    </p>
+                    <p class="l-m" style="padding-left: 0px;margin: 0; line-height:10px;">
+                        <p class="l-m"><strong class="l-m" style="padding-left: 0px;">GSTIN/Unique ID: <span t-if="doc.partner_shipping_id.vat" t-field="doc.partner_shipping_id.vat"/> </strong></p>
+                    </p>
+                    <p class="l-m" style="padding-left: 0px;margin: 0; line-height:10px;">
+                        <p class="l-m"><strong class="l-m" style="padding-left: 0px;">PAN No: </strong> <span t-if="doc.partner_shipping_id.pan_no" t-field="doc.partner_shipping_id.pan_no"/></p>
+                    </p>
+                </td>
+                <td class="td-txt" width="50%" style="vertical-align:middle;padding-left: 13px;padding-right: 13px;">
+                    <p class="td-txt" style="padding-left: 0px;"><strong style="padding-left: 0px;">Billed To:  </strong></p>
+                    <p class="td-txt" style="padding-left: 0px; text-align: left; font-weight: normal; color: #000; margin: 0;">
+                        <strong style="padding-left: 0px;"><span t-if="doc.partner_id.name" t-field="doc.partner_id.name"/> </strong> <br/>
+                        (A Unit of Jaykaycem Central Limited)<br/>
+                        <span t-if="doc.partner_id.street" t-field="doc.partner_id.street"/>
+                        <t t-if="doc.partner_id.street2">
+                            , <span t-field="doc.partner_id.street2"/>
+                        </t>
+                        <t t-if="doc.partner_id.city">
+                            <t t-if="doc.partner_shipping_id.street2">, </t><span t-field="doc.partner_id.city"/>
+                        </t>
+                        <t t-if="doc.partner_id.state_id">
+                            <t t-if="doc.partner_shipping_id.city">, </t><span t-field="doc.partner_id.state_id.code"/>
+                        </t>
+                    </p>
+
+                    <p class="td-txt" style="padding-left: 0px;margin: 0;"><strong style="padding-left: 0px;">State: </strong><span t-if="doc.partner_id.state_id" t-field="doc.partner_id.state_id.name"/></p>
+                    <p class="td-txt" style="padding-left: 0px;margin: 0;"><strong style="padding-left: 0px;">State Code : </strong><span t-if="doc.partner_id.state_id" t-field="doc.partner_id.state_id.id"/></p>
+                    <p class="td-txt" style="padding-left: 0px;margin: 0;"><strong style="padding-left: 0px;">GSTIN/Unique ID: <span t-if="doc.partner_id.vat" t-field="doc.partner_id.vat"/> </strong> </p>
+                    <p class="td-txt" style="padding-left: 0px;margin: 0;"><strong style="padding-left: 0px;">Customer PO No : </strong> <span t-if="doc.ref" t-field="doc.ref"/>
+                        <t t-if="doc.invoice_ref_date">
+                            Dtd. <span t-field="doc.invoice_ref_date" t-options='{"format": "dd.MM.yyyy"}'/>
+                        </t>
+                    </p>
+                </td>
+              </tr>
+            </table>
+
+            <table align="center" class="datta-tbl jpp-dtd" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 5%; text-align: center; font-weight: bold; color: #000; font-size: 14px; padding: 0px;">Sr. No</th>
+                        <th rowspan="2" style="width: 20%; text-align: center; font-weight: bold; color: #000; font-size: 14px; padding: 0px;"> Description of Goods</th>
+                        <th rowspan="2" style="width: 7%; text-align: center;  font-weight: bold; color: #000; font-size: 14px; padding: 0px;">HSN Code</th>
+                        
+                        <th rowspan="2" style="width: 4%; text-align: center;  font-weight: bold; color: #000; font-size: 14px; padding: 0px;">Qty</th>
+                        <th rowspan="2" style="width: 8%; text-align: center;   font-weight: bold; color: #000; font-size: 14px; padding: 0px;">UOM</th>
+                        <th rowspan="2" style="width: 8%; text-align: center;   font-weight: bold; color: #000; font-size: 14px; padding: 0px;"> Rate/Item    </th>
+                        <th rowspan="2" style="width: 8%; text-align: center;   font-weight: bold; color: #000; font-size: 14px; padding: 0px;">Value</th>
+                        <!-- <th colspan="2" style="width: 10%; text-align: center; font-weight: bold; color: #000;  font-size: 14px; padding: 0px;">Discount</th> -->
+                        <th rowspan="2" style="width: 10%; text-align: center; font-weight: bold; color: #000;  font-size: 14px; padding: 0px;">Taxable Value</th>
+                    </tr>
+                </thead>
+                    <!-- <tr>
+                        <th style="padding: 0px;">Dis %</th>
+                        <th style="padding: 0px;">Value</th>
+                    </tr> -->
+                        <t t-set="sl" t-value="0"/>
+                        <t t-set="current_subtotal" t-value="0"/>
+                        <t t-set="current_total" t-value="0"/>
+                        <t t-set="lines" t-value="doc.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
+                        <t t-foreach="lines" t-as="line">
+                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                        <t t-set="current_total" t-value="current_total + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                    <tbody>
+                    <tr style="border-bottom: 1px solid #444;">
+                        <t t-if="not line.display_type" name="account_invoice_line_accountable">
+                            <td style="vertical-align: top;text-align: center;">
+                                <t t-set="sl" t-value="sl + 1" />
+                                <span t-esc="sl"/>
+                            </td>
+                            <td style="vertical-align: top;">
+                            <p style="padding-left: 0px;    margin-top: 0;"><strong><span t-field="line.name" t-options="{'widget': 'text'}"/></strong> </p>
+                            </td>
+                            <td style="vertical-align: top;text-align: center;"><span t-field="line.product_id.l10n_in_hsn_code"/></td>
+                            <td style="vertical-align: top;text-align: center;"><span t-field="line.quantity"/></td>
+                            <td style="vertical-align: top;text-align: center;"><span t-field="line.product_uom_id"  groups="uom.group_uom"/></td>
+                            <td style="vertical-align: top;text-align: center;"><!-- <span t-esc="doc.currency_id.symbol"/> --> <span class="text-nowrap" t-field="line.price_unit"/></td>
+                            <td style="vertical-align: top;text-align: center;"><!-- <span t-esc="doc.currency_id.symbol"/> --> <span t-esc="'%.2f'% line.price_subtotal"/></td>
+                            <!-- <td style="vertical-align: top;text-align: center;"></td> -->
+                            <!-- <td style="vertical-align: top;text-align: center;"></td> -->
+                            <td style="vertical-align: top;text-align: center;"><!-- <span t-esc="doc.currency_id.symbol"/> --> <span t-esc="'%.2f'% line.price_subtotal"/></td>
+                        </t>
+                            
+                        <t t-if="line.display_type == 'line_section'">
+                            <td></td>
+                            <td>
+                                <span t-field="line.name" t-options="{'widget': 'text'}"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <!-- <t t-set="current_section" t-value="line"/> -->
+                            <!-- <t t-set="current_total" t-value="0"/> -->
+                        </t>
+                        <t t-if="line.display_type == 'line_note'">
+                            <td></td>
+                            <td>
+                                <span t-field="line.name" t-options="{'widget': 'text'}"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </t>
+                        
+                    </tr>
+                </tbody></t>
+                </table>
+                
+                <table align="center" class="datta-tbl mb64" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+                    
+                    <tr>
+                        <td  style="vertical-align: top;text-align: left;width: 39.8%;"></td>
+                        <td  style="vertical-align: top;text-align: right;width: 47.9%;"><strong>Total Taxable Value:- </strong></td>
+                        <td  style="vertical-align: top;text-align: center; width: 13%;">
+                            <span t-esc="'%.2f'% current_subtotal"/>
+                        </td>
+                        
+                    </tr>
+                </table>
+
+                <table align="center" class="datta-tbl mb64" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+                    <tr>
+                        <!-- style="vertical-align: top;text-align: left;width: 39.8%;" -->
+                        <td colspan="3" style="height: 55px;">Note:- <span class="" t-field="doc.narration"/></td>
+                    </tr>
+                </table>
+
+                <table align="center" class="datta-tbl mt64" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;">
+                <tr>
+                    <td class="td-txt" style="width: 55%; vertical-align: top; padding:0px;">
+                        <!-- <table cellpadding="0" cellspacing="0" style="padding: 0px;" border="0"> -->
+                        <table class="no-brd" style="width:100%;padding: 0px; border-top: 0px; border-right: 0px; border-bottom: 0px;">
+                            <tr>
+                                <td  style="vertical-align: top;text-align: left;    width: 6%;">1)</td>
+                                <td  style="vertical-align: top;text-align: left;width: 33.8%;"><strong>Packing List &amp; Way Bill Attached : <span t-esc="doc.pck_list_way_bill_attch"/></strong></td>
+                            </tr>
+                            <tr>
+                                <td  style="vertical-align: top;text-align: left;    width: 6%;">2)</td>
+                                <td  style="vertical-align: top;text-align: left;width: 33.8%;"><strong>Vehicle No:- <span t-esc="doc.vehicle_no"/></strong></td>
+                            </tr>
+                            <tr>
+                                <td  style="vertical-align: top;text-align: left;    width: 6%;">3)</td>
+                                <td  style="vertical-align: top;text-align: left;width: 33.8%;"><strong>Waybill No: <span t-esc="doc.waybill_no"/></strong></td>
+                              
+                            </tr>
+                            <tr>
+                                <td  style="vertical-align: top;text-align: left;    width: 6%;">4)</td>
+                                <td  style="vertical-align: top;text-align: left;width: 33.8%;"><strong>L/R No: <span t-esc="doc.lr_no"/></strong></td>
+                            </tr>
+                            <tr>
+                                <td  style="vertical-align: top;text-align: left;    width: 6%;">5)</td>
+                                <td  style="vertical-align: top;text-align: left;width: 33.8%;"><strong>Transport Name: <span t-esc="doc.transporter_name"/></strong></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td class="td-txt" style="width: 45%; padding:0px;">
+                        <table class="no-brd" style="width:100%; border-top: 1px solid #444; padding: 0px;">
+                            <tbody style="text-align: right;">
+                                <!-- <tr></tr> -->
+                                <!-- <tr> -->
+                                    <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json)"/>
+                                    <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                        <t t-if="subtotal">
+                                            <!-- <t t-esc="subtotal"/> -->
+                                            <t class="text-right" t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                                            <t class="text-right" t-call="jehel_report.tax_groups_totals_jehel"/>
+                                        </t>
+                                    </t>
+                                <!-- </tr> -->
+                          
+                               <tr style="border-top: 0px solid #444;">
+                                <td style="width: 25%; text-align:right;color:#000;word-break: break-all; font-size:15px;font-weight:900;"><b>TOTAL : </b></td>
+                                <td style="width: 25%; text-align:right;color:#000;word-break: break-all; font-size:15px;font-weight:900; padding-right: 30px;">
+                                    <b> 
+                                        <!-- <span t-esc="doc.currency_id.symbol" style="font-family: rupee;"/> -->
+                                        <!-- <p>Rupee sign: &#8377;</p> -->
+                                        <!-- <span>&#8377;</span> -->
+                                        <!-- <span>&#x20B9;</span> -->
+                                         <span t-esc="'%.2f'% doc.amount_total"/>
+                                        <!-- <span t-field="doc.amount_total" t-field-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: &quot;doc.pricelist_id.currency_id&quot;}"/>  -->
+                                        <!-- <span t-esc="doc.currency_id.symbol" invisible="1" t-as="currency_id"/> -->
+
+                                        <!-- <span t-esc="doc.amount_total" t-esc-options='{"display_currency": "0xE2 0x82 0xB9"}' /> -->
+
+                                         <!-- <span t-esc="'%.2f'% doc.amount_total" options="{'currency_field': 'currency_id'}"/> -->
+
+                                        <!-- <span t-esc="doc.amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/> -->
+                                    </b>
+                                </td>
+                              </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- <table align="center" class="datta-tbl " cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+                
+                <tbody><tr>
+                <td style="vertical-align: top;text-align: left;width: 39.8%;"></td>
+                <td style="vertical-align: top;text-align: right;width: 47.9%; font-size:16px;"><strong>TOTAL</strong></td>
+                <td style="vertical-align: top;text-align: right;    width: 13%;font-size:16px;"><strong><span t-esc="'%.2f'% current_total"/></strong></td>
+                    
+                    
+                </tr>
+                
+                </tbody>
+                </table> -->
+                
+                <table align="center" class="datta-tbl mt32" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;border-right: 1px solid #444; border-bottom: 1px solid #444; padding: 0px;">
+                
+                <tbody>
+                    <tr style="padding-top: 10px;">
+                        <td class="no-brd" style="text-align: center; width:40%; padding: 0px; margin-right: 10px;">Total Invoice Value (In Figure) </td>
+                        <td class="no-brd" style="text-align: left;width: 60%; font-size:16px; padding: 0px;  margin-left:5px;">
+                            <!-- <span t-esc="doc.currency_id.symbol"/> -->
+                             <span t-esc="'%.2f'% doc.amount_total"/>
+                        </td>
+                    </tr>
+                    
+                    <tr style="padding: 0px;">
+                        <td class="no-brd" style="text-align: center; width:40%; padding: 0px; margin-right: 10px;">Total Invoice Value (In Words) </td>
+                        <td class="no-brd" style="vertical-align: top;text-align: left;width: 60%; font-size:16px; padding: 0px; margin-left:5px;"> <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/> Only</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table align="center" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top: 0px solid #444;">
+                <tbody><tr class="first-row">
+                    <td class="td-txt" width="50%" style="vertical-align: top;">
+                    
+                        <p style="text-align: left; font-weight: normal; color: #000; margin: 0;line-height: 24px;"><strong style="padding-left: 0px;">Declaration: </strong> </p>
+                        <p style="height:30px;"></p>
+                        <p style="height:30px;"></p>
+                        
+                        <!-- <p style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;"><u><strong>Akshay Agarwal</strong></u> </p> -->
+                         <p style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px; border-top: 1px; padding-bottom: 0px;">(Signatory)</p>
+                    </td>
+                    <td class="td-txt" width="50%" style="vertical-align: top;">
+                        <p style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;"><strong>For Jaypee Engg &amp; Hyd. Equipment Co Ltd. </strong> </p>
+                        
+                        <p style="margin: 0;text-align: center;"> <!-- <img src="sgntr.png" style="width:50%;"/> --><p style="padding:30px; font-size:15px; color:#000; text-align:center; width:50%; height:50%;"></p></p>
+                        <p style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;"><strong>(Authorized Signatory With Stamp)</strong> </p>
+                    </td>
+                    
+                  </tr>
+                    
+                </tbody>
+            </table>
+
+            <table align="center" cellpadding="0" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif;border-top:0px solid #444;">
+                <tbody>
+                    <tr class="first-row">
+                        <td class="td-txt" width="35%" style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;">
+                        Orginal For Recipient</td>
+                        <td class="td-txt" width="30%" style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;">Duplicate For Transporter</td>
+                        <td class="td-txt" width="35%" style="text-align: center; font-weight: normal; color: #000; margin: 0;line-height: 24px;">Triplicate For Supplier</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- </div> -->
+        </t>
+    </template>
+
+    <template id="report_invoice_jehel">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="jehel_report.report_invoice_jehel_document" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

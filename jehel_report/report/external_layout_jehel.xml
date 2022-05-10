@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <!-- <template id="minimal_layout" inherit_id="web.minimal_layout">
+        <xpath expr="//script[@t-if='subst']" position="replace">
+            <script t-if="subst">
+                function subst() {
+                    var vars = {};
+                    var x = document.location.search.substring(1).split('&amp;');
+                    for (var i in x) {
+                        var z = x[i].split('=', 2);
+                        vars[z[0]] = unescape(z[1]);
+                    }
+                    var x=['frompage', 'topage', 'page', 'webpage', 'section', 'subsection', 'subsubsection'];
+                    for (var i in x) {
+                        var y = document.getElementsByClassName(x[i]);
+                        for (var j=0; j&lt;y.length; ++j)
+                            y[j].textContent = vars[x[i]];
+                    }
+                    var operations = {
+                        'not-first-page': function (elt) {
+                            elt.style.visibility = (vars.page === vars.frompage) ? "hidden" : "visible";
+                        },
+                        'not-last-page': function (elt) {
+                            elt.style.visibility = (vars.page === vars.topage) ? "hidden" : "visible";
+                        },
+                        'first-page': function (elt) {
+                            elt.style.visibility = (vars.page === vars.frompage) ? "visible" : "hidden";
+                        },
+                        'last-page': function (elt) {
+                            elt.style.visibility = (vars.page === vars.topage) ? "visible" : "hidden";
+                        },
+                    };
+                    for (var klass in operations) {
+                        var y = document.getElementsByClassName(klass);
+                        for (var j=0; j&lt;y.length; ++j)
+                            operations[klass](y[j]);
+                    }
+                }
+            </script>
+        </xpath>
+    </template> -->
+
+    <record id="base.paperformat_euro" model="report.paperformat">
+        <field name="name">A4</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">32</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">15</field>
+        <field name="dpi">90</field>
+    </record>
+
+	<template id="external_layout_standard_jehel">
+        <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-3 mb4">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+                <div class="col-1 mb4"/>
+                <div class="col-8 mb4" name="company_address">
+                    <span t-if="company.street" t-field="company.street"/>,
+                    <span t-if="company.street2" t-field="company.street2"/>,
+                    <span t-if="company.city" t-field="company.city"/>,
+                    <span t-if="company.state_id" t-field="company.state_id.name"/>,
+                    <span t-if="company.zip" t-field="company.zip"/>
+                    <br/>
+                    <p>
+                        ABN: <span t-if="company.vat" t-field="company.vat"/> &#160;&#160;&#160;&#160; Ph: <span t-if="company.phone" t-field="company.phone"/>
+                    <!-- </p> -->
+                    <br/>
+                    <!-- class="margin_left:5px; padding-left: 5px;"  -->
+                    <!-- <p> -->
+                        <span t-if="company.website" t-field="company.website"/>&#160;&#160;&#160;&#160;
+                        e: <span t-if="company.email" t-field="company.email"/>
+                    </p>
+                </div>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+            <!-- <div class="row">
+                <div class="col-6" name="partner_address">
+                    <strong>Sold to: </strong><br/>
+                    <span t-field="o.partner_id.name"/>
+                    <address t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' />
+                </div>
+                <div class="col-6" name="partner_address">
+                    <strong>Deliver to: </strong><br/>
+                    <span t-field="o.partner_shipping_id.display_name"/>
+                    <address t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' />
+                </div>
+            </div> -->
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-5">
+                <!-- This div ensures that the address is not cropped by the header. -->
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="row" style="border-top: 1px solid black;">
+                <div class="col-5">
+                    <ul class="list-inline mb4">
+                        <div t-field="company.bank_details"/>
+                    </ul>
+                </div>
+                
+                <div t-if="report_type == 'pdf'" class="text-muted col-4">
+                    Page: <span class="page"/> / <span class="topage"/>
+                </div>
+                <div class="col-3"/>
+            </div>
+        </div>
+    </template>
+
+    <!-- Public api: layout to t-call from reports -->
+
+    <template id="external_layout_jehel">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <t t-call="jehel_report.external_layout_standard_jehel"><t t-out="0"/></t>
+
+    </template>
+
+</odoo>

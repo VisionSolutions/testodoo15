@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="bank_guarantee_view_form" model="ir.ui.view">
+        <field name="name">bank.guarantee.view.form</field>
+        <field name="model">bank.guarantee</field>
+        <field name="arch" type="xml">
+            <form string="Bank Guarantee Details Form">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <div class="d-flex">
+                                <field class="o_text_overflow" name="name" placeholder="Enter Bank Name" required="1"/>
+                            </div>
+                        </h1>
+                        <label for="our_sale_order_no"/>
+                        <h3>
+                            <div class="d-flex">
+                                <field class="o_text_overflow" name="our_sale_order_no"/>
+                            </div>
+                        </h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="bank_type"/>
+                            <field name="reference_no"/>
+                            <field name="partner_id"/>
+                            <field name="cust_po_no"/>
+                            <field name="sale_order_date"/>
+                            <field name="delivery_date"/>
+                        </group>
+                        <group>
+                            <field name="abg_issued_on"/>
+                            <field name="abg_expiry_date"/>
+                            <field name="abg_amount" widget="monetary"/>
+                            <field name="abg_claim_date"/>
+                            <field name="abg_duration_time"/>
+                            <field name="pbg_issued_on"/>
+                            <field name="pbg_expiry_date"/>
+                            <field name="pbg_amount" widget="monetary"/>
+                            <field name="pbg_claim_date"/>
+                            <field name="pbg_duration_warranty"/>
+                        </group>
+                    </group>
+                    <separator string="Remarks"/>
+                    <field name="remarks" placeholder="Internal notes..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="bank_guarantee_view_tree" model="ir.ui.view">
+        <field name="name">bank.guarantee.view.tree</field>
+        <field name="model">bank.guarantee</field>
+        <field name="arch" type="xml">
+            <tree string="Bank Guarantee Details" decoration-danger="is_within_seven">
+                <field name="sequence" widget="handle"/>
+                <field name="name" optional="show"/>
+                <field name="bank_type" optional="show"/>
+                <field name="our_sale_order_no" optional="show"/>
+                <field name="reference_no" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="cust_po_no" optional="hide"/>
+                <field name="delivery_date" optional="show"/>
+                <field name="abg_issued_on" optional="hide"/>
+                <field name="abg_expiry_date" optional="hide"/>
+                <field name="abg_amount" optional="show"/>
+                <field name="abg_claim_date" optional="hide"/>
+                <field name="abg_duration_time" optional="hide"/>
+                <field name="pbg_issued_on" optional="hide"/>
+                <field name="pbg_expiry_date" optional="hide"/>
+                <field name="pbg_amount" optional="show"/>
+                <field name="pbg_claim_date" optional="hide"/>
+                <field name="is_within_seven" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_bank_guarantee" model="ir.actions.act_window">
+        <field name="name">Bank Guarantee Details</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">bank.guarantee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="bank_guarantee_view_tree"/>
+    </record>
+
+    <menuitem id="menu_bank_guarantee_details" name="Bank Guarantee Details" parent="sale.sale_menu_root" action="action_bank_guarantee" sequence="4"/>
+
+</odoo>

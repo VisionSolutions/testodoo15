@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manufacturing_production" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="ga_drawing"/>
+                <field name="ga_drg_no"/>
+                <field name="ga_approval_date"/>
+                <field name="electrical_circuit_diagram"/>
+                <field name="electrical_circuit_approval_date"/>
+                <field name="equipment_number"/>
+                <field name="transport"/>
+            </xpath>
+            <xpath expr="//field[@name='bom_id']" position="after">
+                <field name="load_data_drawing"/>
+                <field name="panel_drawing_no"/>
+                <field name="qap_sent"/>
+                <field name="qap_approval"/>
+                <field name="qap_approval_on_date"/>
+                <field name="hydraulics_circuit_diagram"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mrp_production_form" model="ir.ui.view">
+        <field name="name">mrp.production.form</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='miscellaneous']//field[@name='origin']" position="after">
+                <field name="sale_order_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
